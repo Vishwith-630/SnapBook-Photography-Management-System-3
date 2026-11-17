@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="snapBookApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SnapBook photography studio booking platform">
+  <title>SnapBook | Photography, beautifully booked</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-controller="MainController as vm" ng-cloak>
+  <header class="site-header">
+    <a class="brand" href="#home" ng-click="vm.closeMenu()">
+      <span class="brand-mark">S</span><span>snapbook<span class="brand-dot">.</span><small>PHOTOGRAPHY STUDIO</small></span>
+    </a>
+    <button class="menu-toggle" ng-click="vm.menuOpen = !vm.menuOpen" aria-label="Toggle navigation">☰</button>
+    <nav class="main-nav" ng-class="{'nav-open': vm.menuOpen}">
+      <a href="#home" ng-click="vm.closeMenu()">Home</a>
+      <a href="#gallery" ng-click="vm.closeMenu()">Gallery</a>
+      <a href="#packages" ng-click="vm.closeMenu()">Packages</a>
+      <a href="#booking" ng-click="vm.closeMenu()">Book a session</a>
+      <a href="#my-bookings" ng-click="vm.closeMenu()" ng-if="vm.user">My bookings</a>
+    </nav>
+    <div class="header-actions">
+      <span class="welcome" ng-if="vm.user">Hi, {{vm.user.name.split(' ')[0]}}</span>
+      <button class="btn btn-quiet btn-small" ng-if="!vm.user" ng-click="vm.openAuth('login')">Log in</button>
+      <button class="btn btn-primary btn-small" ng-if="!vm.user" ng-click="vm.openAuth('register')">Sign up</button>
+      <button class="btn btn-quiet btn-small" ng-if="vm.user" ng-click="vm.logout()">Log out</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero section-wrap" id="home">
+      <div class="hero-copy">
+        <span class="eyebrow"><i></i> YOUR MOMENTS, BEAUTIFULLY KEPT</span>
+        <h1>Every moment<br>has a <em>story.</em></h1>
+        <p>Find your style, choose your date, and let us turn your favourite moments into memories that last forever.</p>
+        <div class="hero-actions">
+          <a href="#booking" class="btn btn-primary">Book your photoshoot <span>↗</span></a>
+          <a href="#gallery" class="text-link">Explore our work <span>→</span></a>
+        </div>
+        <div class="hero-note"><span class="avatar-stack"><b>✦</b><b>♡</b><b>✿</b></span><span><strong>Made for your memories</strong><small>Thoughtful photography, personal to you.</small></span></div>
+      </div>
+      <div class="hero-art">
+        <div class="hero-image-main"><img src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1000&q=85" alt="Couple wedding photography"></div>
+        <div class="hero-image-small"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=85" alt="Wedding details"></div>
+        <div class="floating-note"><span>✧</span><div><strong>Little moments.</strong><small>Big memories.</small></div></div>
+        <div class="hero-sparkle">✳</div>
+      </div>
+    </section>
+
+    <section class="trust-strip">
+      <div><strong>01</strong><span>Choose your style</span></div><div><strong>02</strong><span>Pick your perfect date</span></div><div><strong>03</strong><span>Make it memorable</span></div>
+    </section>
+
+    <section class="section-wrap section-space" id="gallery">
+      <div class="section-heading">
+        <div><span class="eyebrow">A LITTLE INSPIRATION</span><h2>Find your <em>kind</em> of magic.</h2><p>From once-in-a-lifetime celebrations to everyday milestones.</p></div>
+        <a href="#booking" class="text-link">Plan your session →</a>
+      </div>
+      <div class="filter-row">
+        <button class="filter-chip" ng-class="{active: vm.galleryFilter === 'All'}" ng-click="vm.galleryFilter='All'">All styles</button>
+        <button class="filter-chip" ng-repeat="cat in vm.categories" ng-class="{active: vm.galleryFilter === cat}" ng-click="vm.galleryFilter=cat">{{cat}}</button>
+      </div>
+      <div class="gallery-grid">
+        <article class="gallery-card" ng-repeat="item in vm.styles | filter:vm.galleryMatch track by item.id">
+          <div class="gallery-photo"><img ng-src="{{item.image}}" alt="{{item.name}}" loading="lazy"><span class="photo-tag">{{item.category}}</span></div>
+          <div class="gallery-caption"><div><h3>{{item.name}}</h3><p>{{item.description}}</p></div><button class="round-arrow" ng-click="vm.chooseStyle(item)" aria-label="Choose {{item.name}}">↗</button></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="package-section section-space" id="packages">
+      <div class="section-wrap">
+        <div class="section-heading centered"><span class="eyebrow">SIMPLE, THOUGHTFUL OPTIONS</span><h2>A package for <em>every story.</em></h2><p>Choose a starting point. We’ll take care of the details.</p></div>
+        <div class="package-grid">
+          <article class="package-card" ng-repeat="pkg in vm.packages" ng-class="{'package-featured':pkg.featured}">
+            <span class="package-label" ng-if="pkg.featured">MOST LOVED</span>
+            <div class="package-icon">{{pkg.icon}}</div><h3>{{pkg.name}}</h3><p>{{pkg.description}}</p>
+            <div class="package-price">₹{{pkg.price | number:0}}<small> / session</small></div>
+            <ul><li ng-repeat="feature in pkg.features"><span>✓</span>{{feature}}</li></ul>
+            <button class="btn" ng-class="pkg.featured?'btn-primary':'btn-outline'" ng-click="vm.choosePackage(pkg)">Choose {{pkg.name}}</button>
+          </article>
+        </div>
+        <p class="package-footnote">Need something different? Choose Custom during booking and tell us what you have in mind.</p>
+      </div>
+    </section>
+
+    <section class="booking-section section-space" id="booking">
+      <div class="section-wrap">
+        <div class="section-heading"><div><span class="eyebrow">LET'S MAKE A PLAN</span><h2>Your next chapter<br>starts <em>right here.</em></h2><p>Complete the steps below to reserve your photography session.</p></div><div class="secure-note">✦ <span>Easy booking<br><small>Save your details as you go</small></span></div></div>
+        <div class="booking-layout">
+          <div class="booking-main">
+            <div class="stepper">
+              <div ng-repeat="step in vm.steps" ng-class="{active:vm.step===step.id,done:vm.step>step.id}" class="step-item"><span>{{vm.step>step.id?'✓':step.id}}</span><small>{{step.name}}</small></div>
+            </div>
+
+            <div class="booking-panel" ng-show="vm.step===1">
+              <div class="panel-title"><span>STEP 01</span><h3>Choose your photography style</h3><p>What are we celebrating or creating?</p></div>
+              <div class="choice-grid">
+                <button class="style-choice" ng-repeat="style in vm.styles" ng-class="{selected:vm.booking.styleId===style.id}" ng-click="vm.booking.styleId=style.id"><img ng-src="{{style.image}}" alt=""><span>{{style.name}}</span><small>{{style.category}}</small><b ng-if="vm.booking.styleId===style.id">✓</b></button>
+              </div>
+              <div class="panel-actions"><span class="helper-text">You can change your selection later.</span><button class="btn btn-primary" ng-click="vm.nextStep()">Continue <span>→</span></button></div>
+            </div>
+
+            <div class="booking-panel" ng-show="vm.step===2">
+              <div class="panel-title"><span>STEP 02</span><h3>Pick your package</h3><p>Choose the session that feels right for you.</p></div>
+              <div class="package-options">
+                <label class="package-option" ng-repeat="pkg in vm.packages"><input type="radio" ng-model="vm.booking.packageId" ng-value="pkg.id"><span class="custom-radio"></span><span class="option-copy"><strong>{{pkg.name}}</strong><small>{{pkg.duration}} · {{pkg.features.length}} inclusions</small></span><strong class="option-price">₹{{pkg.price | number:0}}</strong></label>
+                <label class="package-option"><input type="radio" ng-model="vm.booking.packageId" value="custom"><span class="custom-radio"></span><span class="option-copy"><strong>Custom session</strong><small>Tell us your requirements</small></span><strong class="option-price">Let's talk</strong></label>
+              </div>
+              <div class="field-group" ng-if="vm.booking.packageId==='custom'"><label>Describe your custom session</label><textarea ng-model="vm.booking.customPackage" rows="3" placeholder="Tell us about the coverage, duration and ideas..."></textarea></div>
+              <div class="panel-actions"><button class="btn btn-quiet" ng-click="vm.prevStep()">← Back</button><button class="btn btn-primary" ng-click="vm.nextStep()">Continue →</button></div>
+            </div>
+
+            <div class="booking-panel" ng-show="vm.step===3">
+              <div class="panel-title"><span>STEP 03</span><h3>Find your perfect date</h3><p>Choose an available day and a time that works for you.</p></div>
+              <div class="calendar-card">
+                <div class="calendar-top"><button class="calendar-arrow" ng-click="vm.changeMonth(-1)" ng-disabled="vm.isCurrentMonth()">‹</button><strong>{{vm.monthLabel()}}</strong><button class="calendar-arrow" ng-click="vm.changeMonth(1)">›</button></div>
+                <div class="calendar-grid"><span class="weekday" ng-repeat="d in vm.weekdays">{{d}}</span><button ng-repeat="day in vm.calendarDays track by $index" class="calendar-day" ng-class="{'muted':!day.current,'disabled':day.disabled,'booked':day.booked,'selected':vm.booking.date===day.date,'today':day.today}" ng-disabled="day.disabled || day.booked || !day.current" ng-click="vm.selectDate(day.date)">{{day.number}}</button></div>
+                <div class="calendar-legend"><span><i class="legend-free"></i>Available</span><span><i class="legend-booked"></i>Booked</span><span><i class="legend-selected"></i>Selected</span></div>
+              </div>
+              <div class="field-group slot-group" ng-if="vm.booking.date"><label>Available time slots for {{vm.booking.date | snapDate:'dd MMM yyyy'}}</label><div class="slot-grid"><button ng-repeat="slot in vm.timeSlots" ng-disabled="vm.isSlotBooked(vm.booking.date,slot)" ng-class="{selected:vm.booking.time===slot,unavailable:vm.isSlotBooked(vm.booking.date,slot)}" ng-click="vm.booking.time=slot">{{slot}}<small ng-if="vm.isSlotBooked(vm.booking.date,slot)">Booked</small></button></div></div>
+              <div class="panel-actions"><button class="btn btn-quiet" ng-click="vm.prevStep()">← Back</button><button class="btn btn-primary" ng-click="vm.nextStep()">Continue →</button></div>
+            </div>
+
+            <div class="booking-panel" ng-show="vm.step===4">
+              <div class="panel-title"><span>STEP 04</span><h3>Where should we meet?</h3><p>Tell us where your photoshoot will take place.</p></div>
+              <div class="venue-grid"><button ng-repeat="v in vm.venues" ng-class="{selected:vm.booking.venueType===v.id}" ng-click="vm.booking.venueType=v.id"><span>{{v.icon}}</span><strong>{{v.name}}</strong><small>{{v.description}}</small></button></div>
+              <div class="form-grid">
+                <div class="field-group full"><label>Venue name / location *</label><input type="text" ng-model="vm.booking.venueName" placeholder="e.g. Lakeview Gardens, Jubilee Hills"></div>
+                <div class="field-group full"><label>Full venue address *</label><textarea rows="2" ng-model="vm.booking.venueAddress" placeholder="Enter street, area, city and landmark"></textarea></div>
+                <div class="field-group full"><label>Google Maps link (optional)</label><input type="url" ng-model="vm.booking.mapLink" placeholder="https://maps.google.com/..."></div>
+              </div>
+              <div class="panel-actions"><button class="btn btn-quiet" ng-click="vm.prevStep()">← Back</button><button class="btn btn-primary" ng-click="vm.nextStep()">Continue →</button></div>
+            </div>
+
+            <div class="booking-panel" ng-show="vm.step===5">
+              <div class="panel-title"><span>STEP 05</span><h3>Make it yours</h3><p>Share inspiration and any special details with our photographer.</p></div>
+              <div class="upload-box"><input id="referenceFiles" type="file" accept="image/*" multiple onchange="angular.element(this).scope().vm.handleFiles(this.files); this.value='';"><label for="referenceFiles"><span class="upload-icon">↑</span><strong>Drop inspiration photos here</strong><small>or <u>browse files</u> · JPG, PNG or WEBP · up to 3 images, 500KB each</small></label></div>
+              <div class="upload-previews" ng-if="vm.booking.attachments.length"><div class="upload-preview" ng-repeat="file in vm.booking.attachments track by $index"><img ng-src="{{file.data}}" alt="Reference image"><button ng-click="vm.removeFile($index)" aria-label="Remove image">×</button><small>{{file.name}}</small></div></div>
+              <div class="field-group"><label>Special instructions</label><textarea rows="4" ng-model="vm.booking.notes" placeholder="Any poses, themes, must-have shots or other details?"></textarea></div>
+              <div class="panel-actions"><button class="btn btn-quiet" ng-click="vm.prevStep()">← Back</button><button class="btn btn-primary" ng-click="vm.nextStep()">Review booking →</button></div>
+            </div>
+
+            <div class="booking-panel" ng-show="vm.step===6">
+              <div class="panel-title"><span>STEP 06</span><h3>Review your booking</h3><p>Take a moment to make sure everything looks right.</p></div>
+              <div class="review-card">
+                <div class="review-row"><span>Photography style</span><strong>{{vm.selectedStyle().name}}</strong></div>
+                <div class="review-row"><span>Package</span><strong>{{vm.selectedPackage().name}}</strong></div>
+                <div class="review-row"><span>Date & time</span><strong>{{vm.booking.date | snapDate:'dd MMM yyyy'}} · {{vm.booking.time}}</strong></div>
+                <div class="review-row"><span>Venue</span><strong>{{vm.booking.venueName}}</strong></div>
+                <div class="review-row"><span>Address</span><strong>{{vm.booking.venueAddress}}</strong></div>
+                <div class="review-row"><span>Reference images</span><strong>{{vm.booking.attachments.length}} attached</strong></div>
+                <div class="review-total"><span>Package total</span><strong>₹{{vm.totalPrice() | number:0}}</strong></div>
+                <div class="review-row"><span>Advance to reserve (30%)</span><strong>₹{{vm.advanceAmount() | number:0}}</strong></div>
+                <div class="review-row"><span>Balance after advance</span><strong>₹{{vm.balanceAmount() | number:0}}</strong></div>
+              </div>
+              <div class="panel-actions"><button class="btn btn-quiet" ng-click="vm.prevStep()">← Edit details</button><button class="btn btn-primary" ng-click="vm.goToPayment()">Continue to payment →</button></div>
+            </div>
+
+            <div class="booking-panel" ng-show="vm.step===7">
+              <div class="panel-title"><span>STEP 07</span><h3>Secure your session</h3><p>This is a demo checkout. No real money will be charged.</p></div>
+              <div class="payment-summary"><div><span>Total package cost</span><strong>₹{{vm.totalPrice() | number:0}}</strong></div><div><span>Advance payment due now</span><strong class="advance-value">₹{{vm.advanceAmount() | number:0}}</strong></div><div><span>Remaining balance</span><strong>₹{{vm.balanceAmount() | number:0}}</strong></div></div>
+              <div class="field-group"><label>Choose payment method</label><div class="payment-methods"><label ng-repeat="method in vm.paymentMethods" ng-class="{selected:vm.booking.paymentMethod===method.id}"><input type="radio" ng-model="vm.booking.paymentMethod" ng-value="method.id"><span>{{method.icon}}</span><strong>{{method.name}}</strong></label></div></div>
+              <div class="demo-disclaimer">ⓘ Demo payment only. Selecting “Confirm demo payment” records a simulated payment in this browser.</div>
+              <div class="panel-actions"><button class="btn btn-quiet" ng-click="vm.prevStep()">← Back</button><button class="btn btn-primary" ng-click="vm.confirmBooking()" ng-disabled="vm.saving">{{vm.saving?'Processing...':'Confirm demo payment · ₹'+(vm.advanceAmount() | number:0)}}</button></div>
+            </div>
+
+            <div class="booking-panel success-panel" ng-show="vm.step===8">
+              <div class="success-icon">✓</div><span class="eyebrow">IT'S OFFICIALLY A DATE</span><h3>Your session is booked!</h3><p>Your booking has been saved in this browser. Keep your reference number handy.</p>
+              <div class="confirmation-ticket"><small>BOOKING REFERENCE</small><strong>{{vm.lastBooking.id}}</strong><div class="ticket-divider"></div><div class="review-row"><span>Session</span><b>{{vm.lastBooking.styleName}}</b></div><div class="review-row"><span>Date & time</span><b>{{vm.lastBooking.date}} · {{vm.lastBooking.time}}</b></div><div class="review-row"><span>Advance paid (demo)</span><b>₹{{vm.lastBooking.advance | number:0}}</b></div><div class="review-row"><span>Payment status</span><b class="status-paid">Paid · Demo</b></div></div>
+              <div class="success-actions"><button class="btn btn-primary" ng-click="vm.downloadReceipt(vm.lastBooking)">Download receipt ↓</button><button class="btn btn-outline" ng-click="vm.resetBooking()">Book another session</button><a href="#my-bookings" class="text-link">View my bookings →</a></div>
+            </div>
+          </div>
+
+          <aside class="booking-aside">
+            <div class="aside-card"><span class="eyebrow">YOUR SESSION</span><h3>A few details,<br><em>a lifetime of memories.</em></h3><div class="aside-line"><span>Selected style</span><strong>{{vm.selectedStyleSafe()}}</strong></div><div class="aside-line"><span>Package</span><strong>{{vm.selectedPackageSafe()}}</strong></div><div class="aside-line"><span>Date</span><strong>{{vm.booking.date || 'Not selected'}}</strong></div><div class="aside-line"><span>Time</span><strong>{{vm.booking.time || 'Not selected'}}</strong></div><div class="aside-line"><span>Venue</span><strong>{{vm.booking.venueName || 'Not selected'}}</strong></div><div class="aside-total"><span>Estimated total</span><strong>₹{{vm.totalPrice() | number:0}}</strong></div><p class="aside-help">Need a hand? <a href="#contact">Talk to our team</a></p></div>
+            <div class="aside-promise"><span>♡</span><div><strong>Made with care</strong><p>Every session is planned around your story, your style and your comfort.</p></div></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="my-bookings-section section-space" id="my-bookings" ng-if="vm.user">
+      <div class="section-wrap">
+        <div class="section-heading"><div><span class="eyebrow">YOUR SNAPBOOK SPACE</span><h2>Your memories, <em>all in one place.</em></h2><p>See upcoming sessions and revisit your booking details.</p></div><span class="booking-count">{{vm.myBookings.length}} booking(s)</span></div>
+        <div class="empty-state" ng-if="!vm.myBookings.length"><span>✧</span><h3>No bookings just yet</h3><p>Your next favourite memory is one booking away.</p><a class="btn btn-primary" href="#booking">Book a session</a></div>
+        <div class="booking-history-grid" ng-if="vm.myBookings.length">
+          <article class="history-card" ng-repeat="b in vm.myBookings | orderBy:'createdAt':true">
+            <div class="history-top"><span class="booking-ref">{{b.id}}</span><span class="status-pill" ng-class="'status-'+b.status.toLowerCase()">{{b.status}}</span></div>
+            <h3>{{b.styleName}}</h3><p>{{b.packageName}} · {{b.date}} at {{b.time}}</p><div class="history-details"><span>Venue</span><strong>{{b.venueName}}</strong><span>Amount</span><strong>₹{{b.total | number:0}}</strong></div>
+            <div class="history-actions"><button class="btn btn-outline btn-small" ng-click="vm.downloadReceipt(b)">Receipt ↓</button><button class="btn btn-quiet btn-small" ng-click="vm.cancelBooking(b)" ng-if="b.status==='Confirmed' && vm.canCancel(b)">Cancel booking</button><span class="muted-text" ng-if="b.status==='Cancelled'">Slot released</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section section-space" id="about"><div class="section-wrap about-layout"><div class="about-image"><img src="https://images.unsplash.com/photo-1452587925148-ce544e77e70d?auto=format&fit=crop&w=1000&q=85" alt="Photographer holding a camera"><span class="about-stamp">THE ART OF<br>REMEMBERING ✳</span></div><div class="about-copy"><span class="eyebrow">A LITTLE ABOUT US</span><h2>We don't just take pictures. We <em>keep feelings.</em></h2><p>At SnapBook, we believe the best photographs feel like you. Our booking experience is designed to make planning simple, personal and joyful—from choosing your photography style to sharing the little details that matter.</p><div class="about-points"><span>✦ Personalised sessions</span><span>✦ Thoughtful planning</span><span>✦ Memories worth keeping</span></div><a href="#booking" class="btn btn-primary">Let's create something →</a></div></div></section>
+
+    <section class="contact-section section-space" id="contact"><div class="section-wrap contact-layout"><div><span class="eyebrow">WE'D LOVE TO HEAR FROM YOU</span><h2>Have a question?<br><em>Say hello.</em></h2><p>Share your question or tell us what you're dreaming up. This demo stores your message locally.</p><div class="contact-detail"><span>✉</span><div><small>EMAIL</small><strong>hello@snapbook.example</strong></div></div><div class="contact-detail"><span>⌖</span><div><small>STUDIO</small><strong>Hyderabad, Telangana</strong></div></div></div><form class="contact-form" ng-submit="vm.sendMessage()"><div class="field-group"><label>Your name</label><input ng-model="vm.contact.name" required placeholder="Your name"></div><div class="field-group"><label>Email address</label><input type="email" ng-model="vm.contact.email" required placeholder="you@example.com"></div><div class="field-group"><label>Your message</label><textarea rows="4" ng-model="vm.contact.message" required placeholder="Tell us how we can help..."></textarea></div><button class="btn btn-primary" type="submit">Send message ↗</button></form></div></section>
+
+    <section class="feedback-section section-space" id="feedback"><div class="section-wrap feedback-layout"><div><span class="eyebrow">A NOTE FROM YOU</span><h2>How was your <em>experience?</em></h2><p>Your feedback helps us make every little detail better.</p></div><form class="feedback-form" ng-submit="vm.submitReview()"><div class="field-group"><label>Your rating</label><div class="rating-input"><button type="button" ng-repeat="n in [1,2,3,4,5]" ng-class="{rated:n<=vm.review.rating}" ng-click="vm.review.rating=n">★</button></div></div><div class="field-group"><label>Your feedback</label><textarea rows="3" ng-model="vm.review.message" required placeholder="Write a few kind words or suggestions..."></textarea></div><button class="btn btn-outline" type="submit">Share feedback</button></form></div></section>
+  </main>
+
+  <footer class="site-footer"><div class="section-wrap footer-inner"><a class="brand" href="#home"><span class="brand-mark">S</span><span>snapbook<span class="brand-dot">.</span><small>PHOTOGRAPHY STUDIO</small></span></a><p>For the moments that become your forever.</p><div><a href="#about">About</a><a href="#contact">Contact</a><a href="#feedback">Feedback</a></div></div><div class="footer-bottom">© {{vm.year}} SnapBook Photography. FSD Lab Case Study · Demo project.</div></footer>
+
+  <div class="modal-backdrop" ng-if="vm.authOpen" ng-click="vm.closeAuth()">
+    <section class="auth-modal" ng-click="$event.stopPropagation()">
+      <button class="modal-close" ng-click="vm.closeAuth()">×</button>
+      <div class="auth-brand"><span class="brand-mark">S</span></div>
+      <span class="eyebrow">{{vm.authMode==='login'?'WELCOME BACK':'YOUR STORY STARTS HERE'}}</span>
+      <h2>{{vm.authMode==='login'?'Lovely to see you.':'Create your account.'}}</h2><p>{{vm.authMode==='login'?'Log in to manage your photography sessions.':'Join SnapBook and start planning your next memory.'}}</p>
+      <form ng-submit="vm.submitAuth()">
+        <div class="field-group" ng-if="vm.authMode==='register'"><label>Full name</label><input ng-model="vm.authForm.name" required placeholder="Your full name"></div>
+        <div class="field-group"><label>Email address</label><input type="email" ng-model="vm.authForm.email" required placeholder="you@example.com"></div>
+        <div class="field-group" ng-if="vm.authMode==='register'"><label>Phone number</label><input type="tel" ng-model="vm.authForm.phone" required pattern="[0-9+\-\s]{10,15}" placeholder="Your phone number"></div>
+        <div class="field-group"><label>Password</label><input type="password" ng-model="vm.authForm.password" required minlength="6" placeholder="At least 6 characters"></div>
+        <button class="btn btn-primary btn-full" type="submit">{{vm.authMode==='login'?'Log in':'Create account'}}</button>
+      </form>
+      <div class="auth-switch">{{vm.authMode==='login'?"New to SnapBook?":"Already have an account?"}} <button ng-click="vm.switchAuth()">{{vm.authMode==='login'?'Create an account':'Log in'}}</button></div>
+      <p class="auth-demo-note">Demo only: account details are stored in this browser. Do not use a real password.</p>
+    </section>
+  </div>
+  <div class="toast" ng-class="{'toast-show':vm.toast.show}" role="status">{{vm.toast.message}}</div>
+  <button class="back-to-top" ng-click="vm.scrollTop()" aria-label="Back to top">↑</button>
+
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/booking.js"></script>
+  <script src="js/payment.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
